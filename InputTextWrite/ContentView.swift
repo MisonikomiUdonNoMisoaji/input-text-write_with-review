@@ -8,39 +8,41 @@
 import SwiftUI
 
 struct ContentView: View {
-        @State var text: String = ""
-    // レビュー: パッと見てなんの判定かわからない
-    // レビュー: IMO enumで書いたほうが安全&スマート (judgementとbuttonlabelをenumで書く方法を教える)
-    @State var judgement: Bool = true
-    // レビュー: buttonLabelじゃない？
-    @State var buttonlabel: String = "編集"
+    @State var text: String = ""
+    @State var textState: TextState = .read
 
     var body: some View {
-            // レビュー: 出題の意図しては、TextEditorとTextを条件で切り替えて欲しかった
-            TextEditor(text: $text)
-                .frame(width: 300, height: 200)     // フレームサイズ指定
-                .border(Color.gray, width: 1)
-                .disabled(judgement)// フレーム外枠の色と太さ指定
-                // レビュー: modifierで装飾できてるのGOOD👍
+        TextEditor(text: $text)
+            .frame(width: 300, height: 200)     // フレームサイズ指定
+            .border(Color.gray.opacity(textState == .edit ? 1 : 0), width: 1)
+            .disabled(textState == .read)// フレーム外枠の色と太さ指定
 
         Button {
-            if (judgement == true) {
-                judgement = false
-                buttonlabel = "編集完了"
-            }
-            else {
-                judgement = true
-                buttonlabel = "編集"
-            }
-            
+            textState.switchState()
         } label: {
-            // レビュー: 状態を判定してここで分岐させたほうが可読性が高くて、完結な気がする
-            Text(buttonlabel)
+            Text(textState.buttonLabel)
         }
-
-        }
-    
     }
+}
+
+enum TextState {
+    case read
+    case edit
+    
+    var buttonLabel: String {
+        return self == .read ? "編集" : "編集完了"
+    }
+    
+    mutating func switchState() {
+        if (self == .read) {
+            self = .edit
+        }
+        else {
+            self = .read
+        }
+    }
+}
+
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
